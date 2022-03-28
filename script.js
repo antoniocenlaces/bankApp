@@ -1,7 +1,7 @@
 'use strict';
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
+/// //////////////////////////////////////////////
+/// //////////////////////////////////////////////
 // BANKIST APP
 
 // Data
@@ -61,4 +61,19 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const { movements } = account1;
 
+const displayMovements = movements => {
+  movements.forEach((value, i) => {
+    const type = value > 0 ? 'deposit' : 'withdrawal';
+    const html = `<div class='movements__row'>
+          <div class='movements__type movements__type--${type}'>${
+      i + 1
+    } ${type}</div>
+          <div class='movements__value'>${value}€</div>
+        </div>`;
+    containerMovements.insertAdjacentHTML('beforeend', html);
+    console.log(value, i, `dentro bucle x`);
+  });
+};
+displayMovements(movements);
