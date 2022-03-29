@@ -77,3 +77,21 @@ const displayMovements = movements => {
   });
 };
 displayMovements(movements);
+calcDisplayBalance(account1);
+
+// función que inserta un campo nuevo, llamado username que tenga las iniciales
+const createUserNames = function (accounts) {
+  accounts.forEach(function (acc) {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.at(0))
+      .join('');
+  });
+};
+createUserNames(accounts);
+
+function calcDisplayBalance(acc) {
+  acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
+  labelBalance.textContent = `${acc.balance}€`;
+}
