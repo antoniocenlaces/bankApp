@@ -75,3 +75,26 @@ movements.forEach((movement, index) => {
 });
 
 console.log([1, 3, 7, 8].map(value => value * 2));
+
+// filter vs find
+// - FILTER:
+//    --opera sobre todo el array
+//    --devuelve otro array con los elementos que cumplen la condición
+// - FIND:
+//    --opera sobre parte/todo el array
+//    --devuelve el primer elemento que cumple la condición
+const boletos = [2, 5, 6, 12, 3, 7];
+const boletoPremiado = 6;
+
+const resultadoFind = boletos.find(boleto => boleto === boletoPremiado);
+console.log(resultadoFind);
+const resultadoFilter = boletos.filter(boleto => boleto === boletoPremiado);
+console.log(resultadoFilter);
+
+// buscar movimientos con find
+const firstWithdrawal = account1.movements.find(mov => mov < 0);
+console.log(firstWithdrawal, `firstWithdrawal`);
+
+// buscar movimientos con filter
+const firstWithdrawal2 = account1.movements.filter(mov => mov < 0)[0];
+console.log(firstWithdrawal2, `firstWithdrawal2`);

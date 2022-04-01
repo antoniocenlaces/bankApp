@@ -1,11 +1,7 @@
-'use strict';
-
 /// //////////////////////////////////////////////
 /// //////////////////////////////////////////////
 // BANKIST APP
-const cargasPagina = localStorage.getItem('cargasPagina') || 0;
-localStorage.setItem('cargasPagina', Number(cargasPagina) + 1);
-console.log(cargasPagina, `Número de veces página cargada`);
+
 // Data
 const account1 = {
   owner: 'Jonas Schmedtmann',
@@ -63,40 +59,57 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-// const { movements } = account1;
-
 const displayMovements = function (movements) {
-  // calcular y mostrar depósitos
   containerMovements.innerHTML = '';
-  movements.forEach((value, i) => {
-    const type = value > 0 ? 'deposit' : 'withdrawal';
-    const html = `<div class='movements__row'>
-          <div class='movements__type movements__type--${type}'>${
-      i + 1
-    } ${type}</div>
-          <div class='movements__value'>${value}€</div>
-        </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
-    // console.log(value, i, `dentro bucle x`);
+  movements.forEach((mov, i) => {
+    const type = mov > 0 ? 'deposit' : 'withdrawal';
+    const html = `
+      <div class="movements__row">
+        <div class="movements__type movements__type--${type}">
+          ${i + 1} ${type}
+        </div>
+        <div class="movements__value">${mov}€</div>
+      </div>
+    `;
+    containerMovements.innerHTML += html;
+    containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
 
-// función que inserta un campo nuevo, llamado username que tenga las iniciales
+/* función que inserta un campo nuevo en lo  accounts, llamado username que tenga las iniciales
+const account1 = {
+  owner: 'Jonas Schmedtmann',
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  interestRate: 1.2, // %
+  pin: 1111,
+};
+const account1 = {
+  owner: 'Jonas Schmedtmann',
+  movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
+  interestRate: 1.2, // %
+  pin: 1111,
+  username: js
+};
+
+
+
+*/
 const createUserNames = function (accounts) {
   accounts.forEach(function (acc) {
     acc.username = acc.owner
       .toLowerCase()
       .split(' ')
-      .map(word => word.at(0))
+      .map(palabra => palabra[0])
       .join('');
   });
 };
 createUserNames(accounts);
 
-function calcDisplayBalance(acc) {
-  acc.balance = acc.movements.reduce((acc, curr) => acc + curr, 0);
+function displayBalance(acc) {
+  acc.balance = acc.movements.reduce((acc, curval) => acc + curval, 0);
   labelBalance.textContent = `${acc.balance}€`;
 }
+
 function displaySummary(acc) {
   // calcular y mostrar depósitos
   const incomes = acc.movements
@@ -105,62 +118,27 @@ function displaySummary(acc) {
 
   labelSumIn.textContent = `${incomes}€`;
 
-  // calcular y mostrar retiradas de dinero
+  // calcular  y mostrar retiradas de dinero
   const outcomes = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, cur, i, arr) => acc + cur, 0);
-
   labelSumOut.textContent = `${Math.abs(outcomes)}€`;
 
   // calcular y mostrar intereses
-  // const interest = (incomes *acc.interestRate) / 100
+  // versión simplificada: por cada depósito calcular su interés (según dato del account) y por un año
+  // independiente de retiradas de dinero.
+  // Para que el interes sea tenido en cuenta, tiene que ser superior a 1€ (cada depósito)
+
+  // const interest = (incomes * acc.interestRate) / 100;
   const interest = acc.movements
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .filter(interest => interest > 1)
-    .reduce((acc, cur, i, arr) => acc + cur, 0);
+    .reduce((acc, cur) => acc + cur, 0);
+
   labelSumInterest.textContent = `${interest}€`;
 }
-const currentAccount = accounts.find(acc => acc.owner === 'Jessica Davis');
-console.log(currentAccount, `Usuario del currentAccount`);
-let selectedAccount;
-btnLogin.addEventListener('click', function (e) {
-  // la función del EventListener envía por defecto el parámetro con el evento
-  console.log(`Me han pulsado login`);
-  e.preventDefault();
-  // Obtener la cuenta que nos interesa
-  const username = inputLoginUsername.value;
-  const pin = Number(inputLoginPin.value);
-  selectedAccount = accounts.find(acc => acc.username === username);
-  console.log(selectedAccount, `cuenta asociada a usuario tecleado`);
-  if (selectedAccount?.pin === pin) {
-    // interroga primero si existe el objeto, caso que exista sigue ejecutando de lo contrario devuelve undefined (que se evalua como false) y no da un error de ejecución
-    labelWelcome.textContent = `Bienvenido ${
-      selectedAccount.owner.split(' ')[0]
-    }`;
-    calcDisplayBalance(selectedAccount);
-    displayMovements(selectedAccount.movements);
-    displaySummary(selectedAccount);
-    containerApp.style.opacity = 1;
-    inputLoginUsername.value = inputLoginPin.value = '';
-    inputLoginPin.blur(); // quita el foco del pin si lo tiene
-  } else {
-    console.log(`Datos de entrada incorrectos`);
-  }
-});
 
-btnTransfer.addEventListener('click', function (e) {
-  console.log(`Me han pulsado login`);
-  e.preventDefault();
-  const transferValue = Number(inputTransferAmount.value);
-  if (selectedAccount.balance >= transferValue)
-    console.log(`El importe a transferir es correcto`);
-});
-
-// displayMovements(movements);
-// calcDisplayBalance(account1);
-
-// displayMovements(account1.movements);
-
-// displaySummary(account1);
-console.log(accounts);
+displayMovements(account1.movements);
+displayBalance(account1);
+displaySummary(account1);
