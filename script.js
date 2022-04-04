@@ -121,8 +121,11 @@ function displaySummary(acc) {
     .reduce((acc, cur, i, arr) => acc + cur, 0);
   labelSumInterest.textContent = `${interest}€`;
 }
-const currentAccount = accounts.find(acc => acc.owner === 'Jessica Davis');
-console.log(currentAccount, `Usuario del currentAccount`);
+function updateUI() {
+  calcDisplayBalance(selectedAccount);
+  displayMovements(selectedAccount.movements);
+  displaySummary(selectedAccount);
+}
 let selectedAccount;
 btnLogin.addEventListener('click', function (e) {
   // la función del EventListener envía por defecto el parámetro con el evento
@@ -138,9 +141,7 @@ btnLogin.addEventListener('click', function (e) {
     labelWelcome.textContent = `Bienvenido ${
       selectedAccount.owner.split(' ')[0]
     }`;
-    calcDisplayBalance(selectedAccount);
-    displayMovements(selectedAccount.movements);
-    displaySummary(selectedAccount);
+    updateUI();
     containerApp.style.opacity = 1;
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur(); // quita el foco del pin si lo tiene
@@ -150,19 +151,181 @@ btnLogin.addEventListener('click', function (e) {
 });
 
 btnTransfer.addEventListener('click', function (e) {
-  console.log(`Me han pulsado login`);
+  console.log(`Me han pulsado transferir`);
   e.preventDefault();
   const transferValue = Number(inputTransferAmount.value);
-  if (selectedAccount.balance >= transferValue)
+  const destinationUsername = inputTransferTo.value;
+  if (selectedAccount.balance >= transferValue) {
     console.log(`El importe a transferir es correcto`);
+    const destinationAccount = accounts.find(
+      acc => acc.username === destinationUsername
+    );
+    console.log(transferValue, `transferValue`);
+    console.log(destinationUsername, `destinationUsername`);
+    console.log(destinationAccount, `destinationAccount`);
+    if (
+      destinationAccount &&
+      destinationAccount.username !== selectedAccount.username
+    ) {
+      alert(
+        `Vas a transferir ${transferValue} a la cuenta de ${destinationAccount.owner}`
+      );
+      destinationAccount.movements.push(Math.abs(transferValue));
+      selectedAccount.movements.push(-Math.abs(transferValue));
+      updateUI();
+      inputTransferTo.value = inputTransferAmount.value = '';
+      inputTransferAmount.blur(); // quita el foco del pin si lo tiene
+    } else {
+      console.log(`Cuenta de destino NO existe`);
+    }
+  } else {
+    console.log(`No tienes fondos suficientes para transferir`);
+  }
 });
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
 
+  const username = inputCloseUsername.value;
+  const pin = Number(inputClosePin.value);
+  console.log(`Has pedido cerrar la cuenta de ${username} con pin ${pin}`);
+  console.log(selectedAccount.username, `selectedAccount.username`);
+  console.log(selectedAccount.pin, `selectedAccount.pin`);
+  if (username === selectedAccount.username && pin === selectedAccount.pin) {
+    const index = accounts.findIndex(acc => acc.username === username);
+    console.log(
+      `elemento a eliminar del array accounts ${index},`,
+      accounts[index]
+    );
+    accounts.splice(index, 1);
+    console.log(accounts, `accounts después de borrar`);
+    inputCloseUsername.value = inputClosePin.value = '';
+    containerApp.style.opacity = 0;
+  } else {
+    console.log(`No se puede eliminar la cuenta`);
+  }
+});
 // displayMovements(movements);
 // calcDisplayBalance(account1);
 
 // displayMovements(account1.movements);
 
 // displaySummary(account1);
-console.log(accounts);
+// selectedAccount = account2;
+// console.log(selectedAccount.movements, `selectedAccount.movements`);
+// console.log(selectedAccount.movements.includes(-150));
 
-db.
+// MÉTODO SOME Y MÉTODO EVERY
+// const isDeposit = mov => mov > 0;
+// const anyDeposit = selectedAccount.movements.some(isDeposit);
+// console.log(anyDeposit, `anyDeposit`);
+
+// const allDeposit = selectedAccount.movements.every(isDeposit);
+// console.log(allDeposit, `allDeposit`);
+btnLoan.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Math.abs(Number(inputLoanAmount.value));
+  console.log(amount, `Solicitado préstamo`);
+  if (amount > 0 && selectedAccount.movements.some(mov => mov > amount * 0.1)) {
+    console.log(`El importe solicitado está aprobado`);
+    selectedAccount.movements.push(amount);
+    console.log(selectedAccount.movements, `selectedAccount.movements`);
+    updateUI();
+    inputLoanAmount.value = '';
+    inputLoanAmount.blur();
+  } else {
+    console.log(`No se aprueba esta cantidad de préstamo`);
+  }
+});
+// const array1 = [1, 7, 4, 9, 0];
+// const array2 = [[1, 6, 3], [9, 0], 3, [34, 45, 89]];
+
+// console.log(array2.flat(2));
+
+const overallBalance = accounts
+  .map(acc => acc.movements)
+  .flat()
+  .reduce((acc, cur, i, arr) => acc + cur, 0);
+console.log(overallBalance);
+console.log(
+  accounts.map(acc => acc.movements),
+  `account.map`
+);
+
+const overallBalance2 = accounts
+  .flatMap(acc => acc.movements)
+  .reduce((acc, cur, i, arr) => acc + cur, 0);
+console.log(overallBalance2, `overallBalance2`);
+
+setTimeout(() => {
+  console.log(`Función ejecutada de forma asíncrona`);
+}, 3000);
+console.log(`Esto se mostrará 3 segundos antes`);
+
+// setInterval -> asíncrona y que no se para (o la paramos nosotros)
+// let i = 0;
+// setInterval(() => {
+//   i++;
+//   console.log(i, `contador`);
+// }, 1000);
+let myTime;
+containerApp.style.opacity = 1;
+function reloj() {
+  const fecha = new Date();
+  const meses = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ];
+  const dia = [
+    'Domingo',
+    'Lunes',
+    'Martes',
+    'Miercoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+  ];
+  let hora = '';
+  let minuto = '';
+  let segundo = '';
+  // alert(fecha);
+  // alert(typeof fecha.getHours());
+  hora = String(fecha.getHours());
+  minuto = String(fecha.getMinutes());
+  segundo = String(fecha.getSeconds());
+  if (fecha.getHours() < 10) {
+    hora = '0' + hora;
+  }
+  if (fecha.getMinutes() < 10) {
+    minuto = '0' + minuto;
+  }
+  if (fecha.getSeconds() < 10) {
+    segundo = '0' + segundo;
+  }
+  document.getElementById('hora').textContent =
+    'Son las ' +
+    hora +
+    ':' +
+    minuto +
+    ':' +
+    segundo +
+    ' del ' +
+    dia[fecha.getDay()] +
+    ' ' +
+    fecha.getDate() +
+    ' de ' +
+    meses[fecha.getMonth()] +
+    ' de ' +
+    fecha.getFullYear();
+  // esta línea de arriba obliga a actualizar la ventana.
+  myTime = setTimeout(reloj(), 1000);
+}
