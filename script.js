@@ -64,7 +64,10 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 // const { movements } = account1;
-
+let myTime;
+let timer;
+let sortOrder = 'afterbegin';
+let sortArrow = '↓ SORT';
 const displayMovements = function (movements) {
   // calcular y mostrar depósitos
   containerMovements.innerHTML = '';
@@ -76,11 +79,33 @@ const displayMovements = function (movements) {
     } ${type}</div>
           <div class='movements__value'>${value}€</div>
         </div>`;
-    containerMovements.insertAdjacentHTML('beforeend', html);
-    // console.log(value, i, `dentro bucle x`);
+    containerMovements.insertAdjacentHTML(sortOrder, html); // afterbegin para que se vean los movimientos últimos los primeros
   });
 };
-
+// const sortMovements = function (movements) {
+//   console.log(movements, `movements antes del sort`);
+//   movements.sort((a, b) => a - b);
+//   console.log(movements, `movements después del sort`);
+//   return movements;
+// };
+btnSort.addEventListener('click', function () {
+  sortOrder = sortOrder === 'afterbegin' ? 'beforeend' : 'afterbegin';
+  sortArrow = sortArrow === '↓ SORT' ? '↑ SORT' : '↓ SORT';
+  btnSort.textContent = sortArrow;
+  displayMovements(selectedAccount.movements);
+  if (timer) clearInterval(timer);
+  timer = startLogoutTimer();
+});
+const logout = function () {
+  inputLoginUsername.value = inputLoginPin.value = '';
+  if (timer) clearInterval(timer);
+  if (myTime) clearTimeout(myTime);
+  selectedAccount = null;
+  containerApp.style.opacity = 0;
+  // interroga primero si existe el objeto, caso que exista sigue ejecutando de lo contrario devuelve undefined (que se evalua como false) y no da un error de ejecución
+  labelWelcome.textContent = `Log in to get started`;
+  document.getElementById('hora').textContent = `Aquí debería estar la hora`;
+};
 // función que inserta un campo nuevo, llamado username que tenga las iniciales
 const createUserNames = function (accounts) {
   accounts.forEach(function (acc) {
@@ -121,7 +146,10 @@ function displaySummary(acc) {
     .reduce((acc, cur, i, arr) => acc + cur, 0);
   labelSumInterest.textContent = `${interest}€`;
 }
+
 function updateUI() {
+  if (timer) clearInterval(timer);
+  timer = startLogoutTimer();
   calcDisplayBalance(selectedAccount);
   displayMovements(selectedAccount.movements);
   displaySummary(selectedAccount);
@@ -142,6 +170,8 @@ btnLogin.addEventListener('click', function (e) {
       selectedAccount.owner.split(' ')[0]
     }`;
     updateUI();
+    if (myTime) clearTimeout(myTime);
+    reloj();
     containerApp.style.opacity = 1;
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur(); // quita el foco del pin si lo tiene
@@ -267,32 +297,31 @@ console.log(`Esto se mostrará 3 segundos antes`);
 //   i++;
 //   console.log(i, `contador`);
 // }, 1000);
-let myTime;
-containerApp.style.opacity = 1;
+
 function reloj() {
   const fecha = new Date();
   const meses = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'Dicember',
   ];
   const dia = [
-    'Domingo',
-    'Lunes',
-    'Martes',
-    'Miercoles',
-    'Jueves',
-    'Viernes',
-    'Sábado',
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Satruday',
   ];
   let hora = '';
   let minuto = '';
@@ -312,20 +341,46 @@ function reloj() {
     segundo = '0' + segundo;
   }
   document.getElementById('hora').textContent =
-    'Son las ' +
     hora +
     ':' +
     minuto +
     ':' +
     segundo +
-    ' del ' +
+    ' of the ' +
     dia[fecha.getDay()] +
     ' ' +
     fecha.getDate() +
-    ' de ' +
+    ' of ' +
     meses[fecha.getMonth()] +
-    ' de ' +
+    ' of ' +
     fecha.getFullYear();
   // esta línea de arriba obliga a actualizar la ventana.
-  myTime = setTimeout(reloj(), 1000);
+  myTime = setTimeout('reloj()', 1000);
+}
+
+function startLogoutTimer() {
+  let time = 300;
+  const printTime = time => {
+    // conseguir padding de un 0 para valores inferiores a 10
+    // const min =
+    //   Math.trunc(time / 60) < 10
+    //     ? '0' + Math.trunc(time / 60)
+    //     : Math.trunc(time / 60);
+    // const sec = time % 60 < 10 ? '0' + (time % 60) : time % 60;
+    const min = String(Math.trunc(time / 60)).padStart(2, '0');
+    const sec = (time % 60).toString().padStart(2, '0');
+    labelTimer.textContent = `${min}:${sec}`;
+  };
+  const tick = () => {
+    time--;
+    if (time === 0) {
+      // eliminar timer y hacer logout del usuario
+      logout();
+      clearInterval(timer);
+    }
+    printTime(time);
+  };
+  const timer = setInterval(tick, 1000);
+  printTime(time);
+  return timer;
 }
